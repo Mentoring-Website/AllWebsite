@@ -29,7 +29,7 @@ const corsOptions = require('../config/corsOptions')
 const download = require('../Routes/downloadRouter')
 const session = require("express-session");
 const calendar = require("../Routes/calenderRouter");
-const replieRouter=require("../Routes/commentsRouter")
+const replieRouter=require("../Routes/replieRouter")
 const port = process.env.PORT || 5000
 const cookieParser=require("cookie-parser")
 

@@ -2,14 +2,13 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const ReplieSchema = new Schema(
   {
-    userId: {
+    mentorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment",
       require: true,
     },
     commentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Comment",
       require: true,
     },
     desc: {

@@ -122,8 +122,19 @@ export const Login = (props) => {
     console.log("Logged in successfully");
   };
   // end sign in with facebook
+  const getUser = async () => {
+    try {
+      const url = `http://localhost:5000/auth/login/success`;
+      const { data } = await axios.get(url, { withCredentials: true });
+      console.log(data);
+       dispatch(loginSuccess(data));
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const google = () => {
     window.open(`http://localhost:5000/auth/google/callback`, "_self");
+    getUser()
   };
 
   const github = () => {

@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faReply } from '@fortawesome/free-solid-svg-icons'
-const Comment = ({ item, addReply }) => {
+import axios from "axios" 
+const Comment = ({com, user ,rep,addReply}) => {
   const [replyText, setReplyText] = useState("");
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -13,19 +14,44 @@ const Comment = ({ item, addReply }) => {
   const handleMouseOut = () => {
     setIsHovering(false);
   };
+ const handleSubmit = async () => {
+       
+        try {
+          const url = `http://localhost:5000/api/v1/comment/4567879`;
+           await axios.post(
+             `http://localhost:5000/replie/64ba686dee48158f93f7c263`,
+             {
+               desc: replyText,
+               commentId:com._id
+             },{ withCredentials: true }
+           ); 
+          addReply(com._id, replyText);
+          setShowReplyBox(false);
+          setReplyText("");
+                      
+        } catch (error) {
+          console.log(error.message);
+        }
+      };
   return (
-    <div >
+    <div>
       <div className="col ">
-        <div className="d-flex flex-start mt-4" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-          <img className="rounded-circle shadow-1-strong me-3"
-            src={item.img} alt="avatar" width="75"
-            height="75" />
+        <div
+          className="d-flex flex-start mt-4"
+          onMouseOver={handleMouseOver}
+          onMouseOut={handleMouseOut}
+        >
+          <img
+            className="rounded-circle shadow-1-strong me-3"
+            src="https://image.lexica.art/full_jpg/f2a8605f-f7fd-4430-86a0-2870e5a1327a"
+            alt="avatar"
+            width="75"
+            height="75"
+          />
           <div className="flex-grow-1 flex-shrink-1">
             <div>
               <div className="d-flex justify-content-between align-items-center">
-                <p className="mb-1">
-                  {item.name}
-                </p>
+                <p className="mb-1">{user.name}</p>
 
                 {!showReplyBox && isHovering && (
                   <button
@@ -40,37 +66,43 @@ const Comment = ({ item, addReply }) => {
                   </button>
                 )}
               </div>
-              <p className="small mb-0">
-                {item.body}
-              </p>
+              <p className="small mb-0">{com.desc}</p>
               {showReplyBox && (
-                <div className='row my-3'>
-                  <div className='col d-flex flex-column radius'>
-                    <input className='w-100 form-control rounded-pill ps-3' ref={parentEle} onChange={(e) => { setReplyText(e.target.value); }} placeholder='leave your comment here' />
-                    <button onClick={() => {
-                      addReply(item.id, replyText);
-                      setShowReplyBox(false);
-                      setReplyText("");
-                    }}
-                      className='ms-auto mt-3 color-secondary btn px-4 py-1 rounded-pill'>send</button>
+                <div className="row my-3">
+                  <div className="col d-flex flex-column radius">
+                    <input
+                      className="w-100 form-control rounded-pill ps-3"
+                      ref={parentEle}
+                      onChange={(e) => {
+                        setReplyText(e.target.value);
+                      }}
+                      placeholder="leave your comment here"
+                    />
+                    <button
+                      onClick={handleSubmit}
+                      className="ms-auto mt-3 color-secondary btn px-4 py-1 rounded-pill"
+                    >
+                      send
+                    </button>
                   </div>
-                </div>)}
+                </div>
+              )}
             </div>
-            {item.children.length > 0 && (
-              item.children.map((child) =>
+            {com.children.length > 0 && (
+              com.children.map((child) =>
               (
                 // <Comment key={child.id} item= {child} addReply={addReply}/>
-                <div className="d-flex flex-start mt-4" key={child.id}>
-                  <img className="rounded-circle shadow-1 me-3"
-                    src={child.img} alt="avatar"
-                    width="75" height="75" />
-                  <div className="flex-grow-1 flex-shrink-1">
+                <div className="d-flex flex-start mt-4" key={child._id}>
+                   <img className="rounded-circle shadow-1 me-3"
+                    src="https://image.lexica.art/full_jpg/f2a8605f-f7fd-4430-86a0-2870e5a1327a" alt="avatar"
+                    width="75" height="75" /> 
+             <div className="flex-grow-1 flex-shrink-1">
                     <div>
                       <div className="d-flex justify-content-between align-items-center">
                         <p className="mb-1">
-                          {child.name}
+                          {user.name}
                         </p>
-                        {/* {!showReplyBox && (
+            {!showReplyBox && (
                               <button
                                 type="button"
                                 className="ms-auto mt-3  color-secondary btn px-4 py-1 rounded-pill"
@@ -81,12 +113,12 @@ const Comment = ({ item, addReply }) => {
                               >
                                 <FontAwesomeIcon icon={faReply} fade />
                               </button>
-                            )} */}
-                      </div>
+                            )}
+            </div>
                       <p className="small mb-0">
-                        {child.body}
+                        {child.desc}
                       </p>
-                      {/* {showReplyBox && (
+            {showReplyBox && (
                           <div className='row my-3'>
                             <div className='col d-flex flex-column radius'>
                                 <input className='w-100 form-control rounded-pill ps-3'   ref={parentEle} onChange={(e) => {setReplyText(e.target.value);}} placeholder='leave your comment here'/>
@@ -96,8 +128,9 @@ const Comment = ({ item, addReply }) => {
                                         setReplyText("");}}
                                         className='ms-auto mt-3  color-secondary btn px-4 py-1 rounded-pill'>send</button>
                             </div>
-                          </div>)} */}
-                    </div>
+                          </div>)}
+            </div>
+            
                   </div>
                 </div>
               ))
@@ -106,7 +139,7 @@ const Comment = ({ item, addReply }) => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Comment

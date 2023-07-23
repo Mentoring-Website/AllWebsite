@@ -1,4 +1,8 @@
 /* Start General Statments */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 * {
   padding: 0;
   margin: 0;

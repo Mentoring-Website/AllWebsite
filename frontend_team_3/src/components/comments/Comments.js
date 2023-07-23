@@ -7,12 +7,29 @@ import { Localhost } from "../../config/api";
 import { useDispatch } from 'react-redux'
 const Comments = () => {
   const [inputComment, setInputComments] = useState('')
-  const [comment, setComments] = useState(comments)
+  const [comment, setComments] = useState([])
   const [replie,setReplies]=useState([])
+  
   // do add reply comment
-  const currentUser = useSelector((state) => state);
-  const dispatch = useDispatch();
-console.log(currentUser);
+  const merge=async()=>{
+    
+  const updatedComments =await comment?.map((com) => {
+  const comReplies = replie.filter((rep) => rep.commentId === com._id);
+  if (comReplies.length > 0) {
+    com.children = comReplies;
+  }
+  return com;
+
+}
+);
+setComments([...updatedComments])
+}
+  
+      // }
+
+ 
+  const {currentUser} = useSelector((state) => state);
+  
   function addReply(commentId, replyText) {
     let commentsWithNewReply = [...comment];  
     insertComment(commentsWithNewReply, commentId, replyText);
@@ -20,8 +37,9 @@ console.log(currentUser);
   }
   // do  add comment to chidren
   function insertComment(comment, parentId, text) {
-    for (let i = 0; i < comment.length; i++) {
-      if (comment[i].id === parentId) { 
+    // merge();
+    for (let i = 0; i < comment?.length; i++) {
+      if (comment[i]._id === parentId) { 
         comment[i].children.unshift((newComment(text)))
       }
     }
@@ -40,31 +58,46 @@ console.log(currentUser);
     setComments([...comment, newComment(inputComment)]);
     setInputComments("");
   } 
-  // useEffect(() => {
-  //     const fetchComments = async () => {
-  //       try {
-  //         const res = await axios.get(
-  //           `http://localhost:5000/api/v1/comment/64ba686dee48158f93f7c263`,
-  //           { withCredentials: true }
-  //         );
-  //         setComments(res.data);
-  //       } catch (err) {}
-  //     };
-  //     fetchComments();
-  //     const fetchReplies = async (url, set) => {
+  useEffect(() => {
+    const fetchCommentsAndReplies = async () => {
+      try {
+        // Fetch comments
+        const commentRes = await axios.get(
+          `http://localhost:5000/api/v1/comment/64ba686dee48158f93f7c263`,
+          { withCredentials: true }
+        );
+        const allComments = commentRes.data.map((comment) => {
+          return { ...comment, children: [] };
+        });
+        setComments(allComments);
 
-  //       try {
-  //         const res = await axios.get(
-  //           `http://localhost:5000/replies/45362577`,
-  //           { withCredentials: true }
-  //         );
-  //         setReplies(res.data);
-  //       } catch (err) {}
-  //     };
-  //     fetchComments();
-  //   }, [comment]);
-     console.log(inputComment);
-      const handleSubmit = async () => {
+        // Fetch replies
+        const replyRes = await axios.get(
+          `http://localhost:5000/replie/64ba686dee48158f93f7c263`,
+          { withCredentials: true }
+        );
+        const allReplies = replyRes.data;
+
+        // Update comments with replies
+        const updatedComments = allComments.map((com) => {
+          const comReplies = allReplies.filter(
+            (rep) => rep.commentId === com._id
+          );
+          if (comReplies.length > 0) {
+            com.children = comReplies;
+          }
+          return com;
+        });
+        setComments(updatedComments);
+      } catch (err) {
+        console.log("There was an error");
+      }
+    };
+    fetchCommentsAndReplies();
+  }, []);
+    
+    const handleSubmit = async () => {
+       console.log(comment);
        
         try {
           const url = `http://localhost:5000/api/v1/comment/4567879`;
@@ -85,8 +118,8 @@ console.log(currentUser);
       {/* comment list  */}
       <div className="row color-gray radius p-3">
         {
-          comment.map(items => (
-            <Comment key={items.id} item={items} addReply={addReply} />
+          comment?.map(items => (
+            <Comment key={items.id} com={items} user={currentUser} rep={replie} addReply={addReply} />
           ))
         }
       </div>

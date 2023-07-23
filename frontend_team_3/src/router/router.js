@@ -8,7 +8,7 @@ import {
     ResetPassword, Selectlist, ShowReqest, ShowOpp, SearchMentor,
     Opportunities, Requests, MentorReqForm, UpdateProfile, SearchMentee, NotFound, Home,
 } from "../pages"
-
+import Calendar from "../components/calender/calender.js"
 
 const Routerl = () => {
     return (
@@ -19,6 +19,8 @@ const Routerl = () => {
             <Route path='/resetpassword' element={<ResetPassword />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/Profiles" element={<Wizard />} />
+            <Route path="/calendar" element={<Calendar />} />
+            
 
             <Route path='' element={<Selectlist />}>
                 <Route path='/mentor' element={<SearchMentor />} />

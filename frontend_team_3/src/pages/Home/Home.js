@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import './style.css'
 import Form from "react-bootstrap/Form";
 import { Accordion, Badge, Button, Stack } from "react-bootstrap";
@@ -13,10 +13,26 @@ import Search from "./search/Search";
 import MentorInLocation from "../../components/homepage/MentorLocation";
 import { Link } from "react-router-dom";
 
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import { loginFailure, loginStart, loginSuccess } from "../../features/user";
 
 
 function Home({ data }) {
-
+const dispatch = useDispatch();
+  const getUser = async () => {
+  try {
+    const url = `http://localhost:5000/auth/login/success`;
+    const { data } = await axios.get(url, { withCredentials: true });
+    console.log(data);
+    dispatch(loginSuccess(data));
+  } catch (err) {
+    console.log(err);
+  }
+};
+useEffect(()=>{
+  getUser()
+})
   return (
     <>
       <div id="home">
