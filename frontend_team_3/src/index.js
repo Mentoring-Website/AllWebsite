@@ -1,7 +1,6 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 import './App.css';
@@ -21,11 +20,9 @@ root.render(
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <App />
-          {/* here added */}
-          <ToastContainer /> 
         </PersistGate>
       </Provider>
-      <ToastContainer/>
+      <ToastContainer />
     </BrowserRouter>
   </React.StrictMode>
 );

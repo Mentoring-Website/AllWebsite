@@ -27,14 +27,14 @@ const Routerl = () => {
                 <Route path='/opp' element={<Opportunities />} />
                 <Route path='/reqs' element={<Requests />} />
             </Route>
-            <Route path="/ShowReq" element={<ShowReqest />} />
-            <Route path="/ShowOpp" element={<ShowOpp />} />
+            <Route path="/ShowReq/:id" element={<ShowReqest />} />
+            <Route path="/ShowOpp/:id" element={<ShowOpp />} />
             <Route path="/PostRequest" element={<MentorReqForm />} />
             <Route path="/PostOpp" element={<MentoringOpportunityForm />} />
             <Route path="/mentoroppapp" element={<MentoringOpportunities />} />
             <Route path="/mentorreqapp" element={<MentoringRequest />} />
             <Route path="/external" element={<Profile />} />
-            <Route path='/edituser/:id' element={<UpdateProfile />} />
+            <Route path='/edituser' element={<UpdateProfile />} />
             <Route path='*' element={<NotFound />} />
         </Routes>
     )

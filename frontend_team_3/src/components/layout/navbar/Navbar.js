@@ -1,5 +1,4 @@
-import React, { useState,useEffect } from 'react';
-import {useSelector} from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -39,10 +38,10 @@ const MyNavbar = () => {
   const [isClick, setIsClick] = useState(false)
   const [data, setProfileData] = useState(null);
   const user1 = useSelector(state => state.currentUser);
-  const profileId = user1.profile;
- 
-  console.log(user1.profile, user1.tokens[0],user1)
-  
+  // const profileId = user1.profile;
+
+  // console.log(user1.profile, user1.tokens[0], user1)
+
   const user = {
     id: 1,
     username: "balqees saber",
@@ -51,39 +50,40 @@ const MyNavbar = () => {
     isActive: true,
     userType: 'mentee'
   };
-  useEffect(() => {
+  // useEffect(() => {
     // Make an API call to fetch the profile information using the profileId
     // Replace 'fetchProfileById' with the actual function that fetches the profile data
-    const fetchProfileById = async () => {
-      try {
-        if(user1.role==="mentee"){
+  //   const fetchProfileById = async () => {
+  //     try {
+  //       if (user1.role === "mentee") {
 
-          const response = await axios.get('http://localhost:5000/api/v1/mentorProfile/'+`${profileId}`, {
-            headers: {
-              Authorization: `Bearer ${user1.tokens[0]}`}})
-       
-           
-           setProfileData(response.data); // Update the state with the fetched profile data
-      } 
-      else if(user1.role==="mentor"){
-        const response = await axios.get('http://localhost:5000/api/v1/menteeProfile/'+`${profileId}`, {
-          headers: {
-            Authorization: `Bearer ${user1.tokens[0]}`}});
-           
-        setProfileData(response.data); // Update the state with the fetched profile data
+  //         const response = await axios.get('http://localhost:5000/api/v1/mentorProfile/' + `${profileId}`, {
+  //           withCredentials: true
+  //         })
 
-      }}catch (error) {
-            console.error(error);
-          }
-        
-    };
-   
-      fetchProfileById(); // Fetch profile data if the profileId is available
-      
-     },[]);
-     
-     console.log(data)
-  
+
+  //         setProfileData(response.data); // Update the state with the fetched profile data
+  //       }
+  //       else if (user1.role === "mentor") {
+  //         const response = await axios.get('http://localhost:5000/api/v1/menteeProfile/' + `${profileId}`, {
+  //           withCredentials: false
+  //         });
+
+  //         setProfileData(response.data); // Update the state with the fetched profile data
+
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+
+  //   };
+
+  //   fetchProfileById(); // Fetch profile data if the profileId is available
+
+  // }, []);
+
+  // console.log(data)
+
   return (
     <Navbar expand="lg" bg='white'>
       <Container>
@@ -156,7 +156,7 @@ const MyNavbar = () => {
                       </li>
                       {/* if user type mentee show some links , is not show others links */}
                       {/* {user.userType === "mentee" ? ( */}
-                        {user1.role === "mentee" ? (
+                      {user1.role === "mentee" ? (
                         <>
                           <li className="nav-item text-start d-lg-none">
                             <Link to="/my-requests" className="nav-link text-light text-capitalize fw-bold" >my requests</Link>

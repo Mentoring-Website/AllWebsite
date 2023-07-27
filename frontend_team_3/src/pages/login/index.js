@@ -1,6 +1,5 @@
 import "./style.css";
 import { React, useState } from "react";
-import { toast } from 'react-toastify';
 import {
   FaFacebookF,
   FaLinkedinIn,
@@ -13,6 +12,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { Localhost } from "../../config/api";
 import { loginFailure, loginStart, loginSuccess } from "../../features/user";
+import { Error, Success } from "../../components/Toast";
 
 export const Login = (props) => {
   const dispatch = useDispatch();
@@ -39,9 +39,11 @@ export const Login = (props) => {
           { withCredentials: true }
         );
         dispatch(loginSuccess(res.data));
-        navigate("/", {replace: true});
+        navigate("/Profiles");
+        Success('login succufully')
       } catch (err) {
         dispatch(loginFailure());
+        Error('login failed')
       }
     }
   };
@@ -103,6 +105,7 @@ export const Login = (props) => {
       console.log(err);
     }
   };
+
   const google = () => {
     window.open(`http://localhost:5000/auth/google/callback`, "_self");
     getUser();
