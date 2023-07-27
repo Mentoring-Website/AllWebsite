@@ -4,28 +4,28 @@ const Profile = require('../Models/ProfileModel')
 const requestSchema = new mongoose.Schema(
   {
     title: {
-        type: String, trim: true,
-        required: [true, "Title is required"],
+      type: String, trim: true,
+      required: [true, "Title is required"],
     },
     description: {
-        type: String, trim: true,
-        required: [true, 'Description is required'],
+      type: String, trim: true,
+      required: [true, 'Description is required'],
     },
-    helpWith: [{type: String}],
-    requirements: [{type: String}],
-    haveBgWith: [{type: String}],
+    helpWith: [{ type: String }],
+    requirements: [{ type: String }],
+    haveBgWith: [{ type: String }],
     lookingJob: { type: Boolean, default: false },
     location: {
-        type: String, trim: true,
-        lowercase: true,
-        required: [true, 'Location required']
+      type: String, trim: true,
+      lowercase: true,
+      required: [true, 'Location required']
     },
     paid: {
-        isPaid: {type: Boolean, default: false},
-        amount: {type: Number, default: 0},
-        currency: {type: String, default: "EGP"}
+      isPaid: { type: Boolean, default: false },
+      amount: { type: Number, default: 0 },
+      currency: { type: String, default: "EGP" }
     },
-    experience: {type: Number, default: 0},
+    experience: [{ type: String }],
     duration: {
       type: Number,
       required: [true, 'Duration in days required']
@@ -33,11 +33,11 @@ const requestSchema = new mongoose.Schema(
     time: {
       start: { type: Date }, end: { type: Date }
     },
-    progress:{
-      type:String,
-      enum:["open", "in progress", "close"],
-      default:"open"
-  },
+    progress: {
+      type: String,
+      enum: ["open", "in progress", "close"],
+      default: "open"
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -53,11 +53,11 @@ const requestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-requestSchema.methods.checkIsClosed = function(request){
-  if(new Date(request.time.end) < new Date()){
-      console.log('closing request ', request.title)
-      request.progress = 'close';
-      request.save();
+requestSchema.methods.checkIsClosed = function (request) {
+  if (new Date(request.time.end) < new Date()) {
+    console.log('closing request ', request.title)
+    request.progress = 'close';
+    request.save();
   }
 }
 

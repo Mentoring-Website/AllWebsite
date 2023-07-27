@@ -71,5 +71,4 @@ opportunitySchema.methods.checkIsClosed = function(opp){
 }
 // create model
 const Opportunity = mongoose.model('opportunity', opportunitySchema);
-
 module.exports = Opportunity;

@@ -60,15 +60,15 @@ const login = async function (req, res, next) {
 };
 
 const getUser = async function (req, res) {
-    try {
-        const user = await User.findOne({ _id: req.params.id })
-        .populate("messages profile");
-      
-        res.status(200).json({user});
-    } catch (e) {
-        res.status(400).json({e})
-    }
+  try {
+    const user = await User.findOne({ _id: req.params.id })
+      .populate("messages profile");
 
+    res.status(200).json({ user });
+  } catch (e) {
+    res.status(400).json({ e })
+  }
+}
 const logout = async function (req, res) {
   res
     .clearCookie("accessToken", {

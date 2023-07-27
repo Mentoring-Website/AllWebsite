@@ -14,7 +14,7 @@ const getAllMentee = (req, res, next) => {
 };
 
 
-const addNewMentee = (req, res, next) => {
+const addNewMentee = async (req, res, next) => {
   let avatar = req.file ? req.file.fieldname : "";
   const avatarPath = req.file ? req.file.path : "";
   let mentee = new Profile({
@@ -80,7 +80,7 @@ const getMentee = async (req, res, next) => {
 
 const getMenteeByUser = async (req, res, next) => {
   const _id = req.params.id;
-  Profile.findOne({user: _id})
+  Profile.findOne({ user: _id })
     .populate({ path: "user dealtWith", select: "-tokens -password" })
     .then((mentee) => {
       if (!mentee) {

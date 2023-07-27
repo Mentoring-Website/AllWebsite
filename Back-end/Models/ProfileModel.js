@@ -19,7 +19,7 @@ const ProfileSchema = new mongoose.Schema(
       trim: true,
     },
     phone: {
-      type: String, 
+      type: String,
       trim: true
     },
     about: [{
@@ -37,7 +37,7 @@ const ProfileSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default:"../uploads/avatar_1689333300642.jpg"
+      default: "../uploads/avatar_1689333300642.jpg"
     },
     yearsOfExperence: {
       type: Number,
