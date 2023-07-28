@@ -21,7 +21,7 @@ const addNewMentee = async (req, res, next) => {
     ...req.body,
     lookingFor: req.body.lookingFor ? req.body.lookingFor : "mentor",
     avatar,
-    user: req.user._id,
+    user: req.user.id,
   });
   mentee.updateRole(mentee);
 

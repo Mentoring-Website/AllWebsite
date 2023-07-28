@@ -1,27 +1,34 @@
+const Profile = require("../Models/ProfileModel");
 const opportunitys = require("../Models/opportunityModel");
 const request = require("../Models/mentorRequestModel");
 
-exports.getProfileCalendar = (req, res) => {
-  const role = req.user.role;
-  const opportunity =
-    "mentor" == role
-      ? opportunitys.find({ owner: req.user._id })
-      : request.find({ mentee: req.user._id });
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const monthName = today.toLocaleString("default", { month: "long" });
+exports.getProfileCalendar = async (req, res) => {
+  try {
+    const profile = await Profile.find({ user: req.user.id });
+    //   console.log(profile);
+    //   const today = new Date();
+    //   const year = today.getFullYear();
+    //   const month = today.getMonth() + 1;
+    //   const daysInMonth = new Date(year, month, 0).getDate();
+    //   const monthName = today.toLocaleString("default", { month: "long" });
 
-  const unavailableDays = opportunitys.duration;
+    const startdate = profile.busyDays
+      ? new Date(profile.busyDays?.from).getDate()
+      : 18;
+    const enddate = profile.busyDays
+      ? new Date(profile.busyDays?.to)?.getDate()
+      : 22;
+    let unavailable = [];
+    for (let i = startdate; i <= enddate; i++) {
+      unavailable.push(i);
+    }
+    const calendarData = {
+      profile,
+      busyDays: unavailable,
+    };
 
-  const calendarData = {
-    year,
-    month,
-    monthName,
-    daysInMonth,
-    unavailableDays,
-  };
-
-  res.statuse(200).send(calendarData);
+    res.status(200).send(calendarData);
+  } catch (e) {
+    res.status(400).send(e);
+  }
 };

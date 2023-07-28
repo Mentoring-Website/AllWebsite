@@ -20,12 +20,14 @@ const ProfileSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      trim: true
-    },
-    about: [{
-      type: String,
       trim: true,
-    }],
+    },
+    about: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     location: {
       type: String,
       trim: true,
@@ -37,16 +39,18 @@ const ProfileSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: "../uploads/avatar_1689333300642.jpg"
+      default: "../uploads/avatar_1689333300642.jpg",
     },
     yearsOfExperence: {
       type: Number,
     },
-    expertise: [{
-      name: { type: String, trim: true },
-      from: { type: Number, max: 2024, min: 1900 },
-      to: { type: Number, max: 2024, min: 1900 },
-    }],
+    expertise: [
+      {
+        name: { type: String, trim: true },
+        from: { type: Number, max: 2024, min: 1900 },
+        to: { type: Number, max: 2024, min: 1900 },
+      },
+    ],
     currentCompany: {
       type: String,
       trim: true,
@@ -56,18 +60,23 @@ const ProfileSchema = new mongoose.Schema(
       default: false,
     },
     user: {
-      type: mongoose.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       unique: true,
       required: true,
     },
-    dealtWith: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
-    busyDays: [{
-      from: { type: Date }, to: { type: Date }
-    }]
+    dealtWith: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    busyDays: [
+      {
+        from: { type: Date },
+        to: { type: Date },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -87,6 +96,7 @@ ProfileSchema.methods.updateRole = async function (mentor) {
   }
 }
 
-const Profile = mongoose.model("Profile", ProfileSchema);
+const ProfileModel =
+  mongoose.models.Profile || mongoose.model("Profile", ProfileSchema);
 
-module.exports = Profile;
+module.exports = ProfileModel;

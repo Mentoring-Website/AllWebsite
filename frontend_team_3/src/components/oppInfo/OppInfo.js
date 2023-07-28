@@ -4,7 +4,7 @@ import UserInfo from '../userInfo/UserInfo'
 import Opp from '../opp/Opp'
 import { userInfo as items } from '../data/data'
 
-const OppInfo = () => {
+const OppInfo = ({id}) => {
   return (
     <div>
       {
@@ -12,7 +12,7 @@ const OppInfo = () => {
           {items.opp.map(item => <Opp item={item} key={item.title} />)}
           <div className='user'>
             <UserInfo item={items} key={items.title} />
-            <Comments />
+            <Comments id={id}/>
           </div>
         </>
       }

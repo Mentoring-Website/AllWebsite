@@ -5,7 +5,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { Localhost } from "../../config/api";
 import { useDispatch } from "react-redux";
-const Comments = () => {
+const Comments = ({id}) => {
   const [inputComment, setInputComments] = useState("");
   const [comment, setComments] = useState([]);
   const [replie, setReplies] = useState([]);
@@ -59,7 +59,7 @@ const Comments = () => {
       try {
         // Fetch comments
         const commentRes = await axios.get(
-          `http://localhost:5000/api/v1/comment/64ba686dee48158f93f7c263`,
+          `http://localhost:5000/api/v1/comment/${id}`,
           { withCredentials: true }
         );
         const allComments = commentRes.data.map((comment) => {
@@ -69,7 +69,7 @@ const Comments = () => {
  
         // Fetch replies
         const replyRes = await axios.get(
-          `http://localhost:5000/replie/64ba686dee48158f93f7c263`,
+          `http://localhost:5000/replie/${id}`,
           { withCredentials: true }
         );
         const allReplies = replyRes.data;
@@ -98,7 +98,7 @@ const Comments = () => {
     try {
       const url = `http://localhost:5000/api/v1/comment/4567879`;
       await axios.post(
-        `http://localhost:5000/api/v1/comment/64ba686dee48158f93f7c263`,
+        `http://localhost:5000/api/v1/comment/${id}`,
         {
           desc: inputComment,
         },
@@ -121,6 +121,7 @@ const Comments = () => {
             user={currentUser}
             rep={replie}
             addReply={addReply}
+            id={id}
           />
         ))}
       </div>

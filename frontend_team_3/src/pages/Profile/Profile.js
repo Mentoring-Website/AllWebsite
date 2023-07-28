@@ -6,7 +6,8 @@ import { useParams } from "react-router-dom/dist";
 import CalendarDays from "./calender-days";
 import { useSelector } from "react-redux";
 import axios from "axios";
-function Profile({Id}) {
+import { Localhost } from "../../config/api";
+function Profile({ Id }) {
   // const [fileContent, setFileContent] = useState('');
 
   // useEffect(() => {
@@ -17,16 +18,41 @@ function Profile({Id}) {
   // }, []);
 
   // return <div dangerouslySetInnerHTML={{ __html: fileContent }} />;
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'];
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
-      const  [date,setDate]=useState({currentDay:new Date()})
-   
- const changeCurrentDay = (day) => {
+  const [date, setDate] = useState({ currentDay: new Date() });
+
+  const changeCurrentDay = (day) => {
     setDate({ currentDay: new Date(day.year, day.month, day.number) });
   };
-
+  const [calendardate, setCalendarDate] = useState();
+  useEffect(() => {
+    const calendarbusy = async () => {
+      try {
+        const res = await axios.get(`${Localhost}/calendar`, {
+          withCredentials: true,
+        });
+        setCalendarDate(res.data);
+      } catch (e) {
+        console.log(e);
+      }
+    }; // console.log(calendardate.busyDays);
+    calendarbusy();
+  });
   const [value, onChange] = useState(new Date());
   const [profileType, setProfileType] = useState(true);
   const { id } = useParams();
@@ -69,11 +95,7 @@ function Profile({Id}) {
   const filteredMessages = messages.filter((message) =>
     message.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const [calendardate,setCalendarDate]=useState()
-// useEffect(async()=>{
-//     const res=await axios.get(`./calendar/${Id}`,{withCredentials:true})
-//     setCalendarDate(res.data)
-// })
+
   return (
     <div className="container-xl">
       <div className="row" style={{ marginTop: "8%" }}>
@@ -84,7 +106,7 @@ function Profile({Id}) {
                 <Link to="">Edit Profile</Link>
               </li>
               <li className="list-item">
-                <Link to="">Settings</Link>
+                <Link to="">Settings</Link>z{" "}
               </li>
               <li className="list-item">
                 <Link to="">Terms and Privacys</Link>
@@ -161,7 +183,7 @@ function Profile({Id}) {
                         JobTitle
                       </label>
                       <br />
-                      <span>Software Engineer</span>
+                      <span>{calendardate?.profile[0].designation}</span>
                     </div>
                   ) : (
                     <div>
@@ -570,6 +592,7 @@ function Profile({Id}) {
                   <CalendarDays
                     day={date.currentDay}
                     changeCurrentDay={changeCurrentDay}
+                    unavilable={calendardate?.busyDays}
                   />
                 </div>
               </div>
