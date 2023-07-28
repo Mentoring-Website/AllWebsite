@@ -4,6 +4,7 @@ function CalendarDays(props) {
     props.day.getMonth(),
     1
   );
+  const selecteddays = [23, 14, 17];
   const weekdayOfFirstDay = firstDayOfMonth.getDay();
   let currentDays = [];
 
@@ -23,7 +24,7 @@ function CalendarDays(props) {
       date: new Date(firstDayOfMonth),
       month: firstDayOfMonth.getMonth(),
       number: firstDayOfMonth.getDate(),
-      selected: firstDayOfMonth.toDateString() === props.day.toDateString(),
+      selected: props.unavilable?.includes(firstDayOfMonth.getDate()),
       year: firstDayOfMonth.getFullYear(),
     };
 

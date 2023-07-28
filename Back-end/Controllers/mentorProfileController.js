@@ -9,7 +9,7 @@ const PostMentor = async (req, res) => {
     ...req.body,
     lookingFor: req.body.lookingFor ? req.body.lookingFor : "mentee",
     avatar,
-    user: req.user._id,
+    user: req.user.id,
   });
   mentor.updateRole(mentor);
   try {

@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faReply } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-const Comment = ({ com, user, rep, addReply }) => {
+const Comment = ({ com, user, rep, addReply ,id}) => {
   const [replyText, setReplyText] = useState("");
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -18,7 +18,7 @@ const Comment = ({ com, user, rep, addReply }) => {
     try {
       const url = `http://localhost:5000/api/v1/comment/4567879`;
       await axios.post(
-        `http://localhost:5000/replie/64ba686dee48158f93f7c263`,
+        `http://localhost:5000/replie/${id}`,
         {
           desc: replyText,
           commentId: com._id,
@@ -101,9 +101,9 @@ const Comment = ({ com, user, rep, addReply }) => {
                   <div className="flex-grow-1 flex-shrink-1">
                     <div>
                       <div className="d-flex justify-content-between align-items-center">
-                        <p className="mb-1">{child.name}</p>
+                        <p className="mb-1">{user.name}</p>
                       </div>
-                      <p className="small mb-0">{child.desc}</p>
+                      <p className="small mb-0">{child?.desc}</p>
                     </div>
                   </div>
                 </div>
