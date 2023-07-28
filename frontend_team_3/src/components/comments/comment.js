@@ -101,9 +101,9 @@ const Comment = ({ com, user, rep, addReply ,id}) => {
                   <div className="flex-grow-1 flex-shrink-1">
                     <div>
                       <div className="d-flex justify-content-between align-items-center">
-                        <p className="mb-1">{child.name}</p>
+                        <p className="mb-1">{user.name}</p>
                       </div>
-                      <p className="small mb-0">{child.desc}</p>
+                      <p className="small mb-0">{child?.desc}</p>
                     </div>
                   </div>
                 </div>
