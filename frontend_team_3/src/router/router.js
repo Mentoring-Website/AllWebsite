@@ -20,13 +20,14 @@ const Routerl = () => {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/Profiles" element={<Wizard />} />
             <Route path="/forgetpassword" element={<ForgetPassword />} />
-
+            
             <Route path='' element={<Selectlist />}>
                 <Route path='/mentor' element={<SearchMentor />} />
                 <Route path='/mentee' element={<SearchMentee />} />
                 <Route path='/opp' element={<Opportunities />} />
                 <Route path='/reqs' element={<Requests />} />
             </Route>
+            
             <Route path="/ShowReq/:id" element={<ShowReqest />} />
             <Route path="/ShowOpp/:id" element={<ShowOpp />} />
             <Route path="/PostRequest" element={<MentorReqForm />} />
