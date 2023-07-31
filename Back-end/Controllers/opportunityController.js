@@ -12,6 +12,22 @@ const getAllOpportunities = async (req, res) => {
     }
 };
 
+const getOpportunityByUserId = async (req, res) => {
+    try {
+        const opportunity = await Opportunity
+            .findOne({owner: req.params.id})
+        if (!opportunity) {
+            return res.status(404).send({ msg: ` No opportunity for this userId ${_id}` });
+        }
+        opportunity.forEach(opp=>{
+            opp.checkIsClosed(opp)
+        })
+        res.status(200).json([opportunity]);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
+
 const getOpportunityById = async (req, res) => {
     try {
         const _id = req.params.id;
@@ -84,4 +100,5 @@ module.exports = {
     updateOpportunity,
     createOpportunity,
     deleteOpportunity,
+    getOpportunityByUserId
 };

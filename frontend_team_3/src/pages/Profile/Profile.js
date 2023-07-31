@@ -5,86 +5,151 @@ import { mentor4 } from "../../assets";
 import { useParams } from "react-router-dom/dist";
 import CalendarDays from "./calender-days";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { Localhost } from "../../config/api";
-function Profile({ Id }) {
-  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+import { Error, Success } from '../../components/Toast';
+import axios from "axios";
 
-  const [date, setDate] = useState({ currentDay: new Date() });
-
-  const changeCurrentDay = (day) => {
-    setDate({ currentDay: new Date(day.year, day.month, day.number) });
-  };
-  const [calendardate, setCalendarDate] = useState();
-  useEffect(() => {
-    const calendarbusy = async () => {
-      try {
-        const res = await axios.get(`${Localhost}/calendar`, {
-          withCredentials: true,
-        });
-        setCalendarDate(res.data);
-      } catch (e) {
-        console.log(e);
-      }
-    }; // console.log(calendardate.busyDays);
-    calendarbusy();
-  });
-  const [profileType, setProfileType] = useState(true);
+function Profile() {
+  axios.defaults.withCredentials = true;
+  const user = useSelector(state => state.currentUser);
+  const isMentee = user?.role === 'mentee';
   const { id } = useParams();
-  const [sender, setSender] = useState([
-    {
-      to: "",
-      val: "",
-    },
-  ]);
-  const [messages, setMessages] = useState([
-    {
-      id: 0,
-      name: "First Name",
-      usrImg: "user image",
-      msg: "this is the message being sent from the user",
-    },
-  ]);
+  const [guestProfile, setGuestProfile] = useState('');
+  const [profile, setProfile] = useState({
+    user: {name: '', email: ''},
+    designation: '',
+    avatar:  '', 
+    role: 'mentee', 
+    currentCompany: '', 
+    university: '',
+    yearsOfExperence: 0, 
+    availableForHiring: true, 
+    about: 'sixteen free code camp', 
+    expertise: [{name: '', from: '', to: ''}], 
+    skills: [] });
+  const [messages, setMessages] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [msgBtnClicked, setMsgBtnClicked] = useState(false);
+  const [msgContent, setMsgContent] = useState("");
+  const [oppOrReq, setOppOrReq] = useState([]);
+  const [dealtWith, setDealtWith] = useState([]);
+  const [calendardate, setCalendarDate] = useState();
+  const [date, setDate] = useState({currentDay: new Date()});
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+  useEffect(() => {
+    const getProfile = async() => {
+        document.cookie = 'accessToken=' + user?.tokens[0]?.slice(1, -1)
+        // get guest and user
+        await axios.get(`${Localhost}/api/v1/mentorProfile/user/${id}`)
+        .then(res=>{
+          setProfile(res?.data)
+          // get dealtWith
+          if(res?.data?.dealtWith){
+            let dealers = [];
+            res?.data?.dealtWith?.forEach(async dealer =>{
+              await axios.get(`${Localhost}/api/v1/mentorProfile/user/${dealer?._id}`)
+              .then(deal=>{
+              dealers.push({
+                avatar: deal?.avatar,
+                name: dealer?.name
+              })
+              }).catch(e=> Error(e.message))
+            })
+            setDealtWith(dealers)
+          }
+        }).catch(e=> Error(e.message))
+        await axios.get(`${Localhost}/api/v1/mentorProfile/user/${(user._id)}`)
+        .then(guestRes=>setGuestProfile(guestRes?.data)).catch(e=> Error(e.message))
+
+        // get user messages
+        await axios.get(`${Localhost}/api/v1/message/receiver/${id}`)
+        .then(getMessages=>{
+        const fullMsg = getMessages?.data?.map((msg)=>{
+           return({
+              id: messages.length, 
+              name: msg?.sender?.name || 'Unknown', 
+              avatar: msg?.sender?.avatar || "https://images.unsplash.com/photo-1489753735160-2cbf3d9006d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+              messageContent: msg?.messageContent || 'none'
+            })
+          })
+          setMessages([...fullMsg]);
+        }).catch(e=>Error(e.message))
+        // get user opportunities
+        if(profile?.user?.role === "mentor"){
+          await axios.get(`${Localhost}/api/opp/opp/owner/${id}`)
+          .then(getOpenOppOrReq=>setOppOrReq(getOpenOppOrReq?.data))
+        }else{
+          await axios.get(`${Localhost}/api/req/request/owner/${id}`)
+          .then(getOpenOppOrReq=>setOppOrReq(getOpenOppOrReq?.data))
+        }
+      }
+
+    const calendarbusy = async () => {
+      try {
+        const res = await axios.get(`${Localhost}/calendar`);
+        setCalendarDate(res.data);
+      } catch (e) {
+        Error(e.message);
+      }
+    };
+    getProfile()
+    calendarbusy();
+  }, []);
+  
+ const changeCurrentDay = (day = date.currentDay) => {
+    setDate({ currentDay: new Date(day.year, day.month, day.number) });
+  };
+  
   const handleSend = () => {
     // Create a new message object with the desired values
     const newMessage = {
       id: messages.length,
-      name: sender.to,
-      usrImg: "user image",
-      msg: sender.val,
+      name: guestProfile?.user?.name || "Unknown",
+      avatar: guestProfile?.avatar || "https://images.unsplash.com/photo-1489753735160-2cbf3d9006d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80",
+      messageContent: msgContent || "...",
     };
-    if (newMessage.name === "") {
-      return;
-    }
-    setMessages([...messages, newMessage]);
-    setSender({ to: "", val: "" });
+    setMessages(prev=>[...prev, newMessage]);
   };
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
-  const { currentUser } = useSelector((state) => state);
-  // console.log(currentUser)
 
   // Filter the messages based on the search term
   const filteredMessages = messages.filter((message) =>
-    message.name.toLowerCase().includes(searchTerm.toLowerCase())
+    message?.messageContent?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
+  // connect message to back
+  const handleMessage = async (e)=>{
+    e.preventDefault();
+    await axios.post(`${Localhost}/api/v1/message/${id}` ,{
+      messageContent: msgContent,
+    })
+    .then(() =>{
+      Success('Message sended')
+      handleSend();
+      setMsgBtnClicked(!msgBtnClicked);
+    })
+    .catch((error)=>{Error(error.message);})
+  }
+
+  const applyForOpp = async (id) => {
+    await axios.patch(`${Localhost}/api/auth/applicant/opp/${id}`)
+    .then(() =>{
+      Success('Applied Successfully')
+    })
+    .catch((e)=>{Error(e.message);})
+  }
+  
+  const applyForReq = async (id) => {
+    await axios.patch(`${Localhost}/api/auth/applicant/request/${id}`)
+    .then(() =>{
+      Success('Applied Successfully')
+    })
+    .catch((e)=>{Error(e.message);})
+  }
 
   return (
     <div className="container-xl">
@@ -93,35 +158,30 @@ function Profile({ Id }) {
           <div className="d-lg-block d-sm-none" style={{ lineHeight: "35px" }}>
             <ul className="list-group list-unstyled">
               <li className="list-item">
-                <Link to="">Edit Profile</Link>
+                <Link to = {'/edituser/'+user?._id} >Edit Profile</Link>
               </li>
               <li className="list-item">
-                <Link to="">Settings</Link>z{" "}
+                <Link to= {'/edituser/'+user?._id} >Settings</Link>
               </li>
               <li className="list-item">
                 <Link to="">Terms and Privacys</Link>
               </li>
             </ul>
             <p className="">
-              {profileType ? (
-                <Link to="">My Requests</Link>
+              {isMentee ? (
+                <Link to= "/mentorreqapp" >My Requests</Link>
               ) : (
-                <Link to="">My Oppourtunities</Link>
+                <Link to= "/mentoroppapp" >My Oppourtunities</Link>
               )}
             </p>
-            <button className="bg-none">
-              {profileType ? "Post a new Requests" : "Post a new Oppourtunity"}
-              <i
-                className="fa fa-plus"
-                style={{
-                  color: "white",
-                  backgroundColor: "#007580",
-                  fontSize: "10px",
-                  padding: "5px",
-                  marginLeft: "5px",
-                }}
-              ></i>
-            </button>
+            <Link to = {isMentee ? "/PostRequest" : "/PostOpp"} >
+              <button className="bg-none">
+                {isMentee ? "Post a new Requests" : "Post a new Oppourtunity"}
+                <i className="fa fa-plus"
+                style={{ color: "white", backgroundColor: "#007580", fontSize: "10px", padding: "5px", marginLeft: "5px", }}
+                ></i>
+              </button>
+            </Link>
           </div>
         </div>
         <div className="col-lg-6 col-md-12">
@@ -130,67 +190,43 @@ function Profile({ Id }) {
               <button className="btn btn-warning rounded-pill">Message</button>
             </div>
             <div className="--profile-body d-flex flex-column flex-wrap justify-content-center align-items-center">
-              <img
-                src={mentor4}
-                alt="userImage"
-                className="w-25 h-25 rounded-circle"
-              />
-              <h4 className="fs-5 pt-4">{currentUser.name}</h4>
-              <h5 className="fs-6 p-1">{calendardate?.profile[0].designation}</h5>
-              <span className="text-white text-uppercase">
-                {calendardate?.profile[0].lookingFor}
-              </span>
+              <img src={profile?.avatar} alt="userImage" className="w-25 h-25 rounded-circle" />
+              <h4 className="fs-5 pt-4">{ profile?.user?.name }</h4>
+              <h5 className="fs-6 p-1">{ profile?.designation }</h5>
+              <span className="text-white text-uppercase">{ profile?.user?.role }</span>
             </div>
             <div className="--inner-icons d-lg-none d-sm-flex justify-content-end align-items-end gap-2">
-              <Link to="">
+              <span>
                 <i className="fa-solid fa-envelope fs-3"></i>
-              </Link>
-              <Link to="">
+              </span>
+              <span>
                 <i className="fa-solid fa-calendar-days fs-3 pe-2"></i>
-              </Link>
+              </span>
             </div>
           </div>
           <div className="--personal-info mt-4">
             <div className="d-flex flex-row gap-4">
-              <h3 className="border-bottom border-warning fs-6">
-                Personal Information
-              </h3>
+              <h3 className="border-bottom border-warning fs-6">Personal Information</h3>
               <h3 className="fs-6">Addiontional Information</h3>
             </div>
             <div className="p-3 rounded" style={{ backgroundColor: "#f7f7f7" }}>
               <div className="d-flex">
                 <div className="col">
                   <div>
-                    <label htmlFor="name" style={{ color: "#007580" }}>
-                      Name
-                    </label>
+                    <label htmlFor="name" style={{ color: "#007580" }}>Name</label>
                     <br />
-                    <span>{currentUser.name}</span>
+                    <span>{ profile?.user?.name }</span>
                   </div>
-                  {profileType ? (
                     <div>
-                      <label htmlFor="name" style={{ color: "#007580" }}>
-                        JobTitle
-                      </label>
+                      <label htmlFor="name" style={{ color: "#007580" }}> JobTitle </label>
                       <br />
-                      <span>{calendardate?.profile[0].designation}</span>
+                      <span>{ profile?.designation }</span>
                     </div>
-                  ) : (
+                  {profile?.user?.role === "mentor" ? (
                     <div>
-                      <label htmlFor="name" style={{ color: "#007580" }}>
-                        I'm
-                      </label>
+                      <label htmlFor="company" style={{ color: "#007580" }}>Company</label>
                       <br />
-                      <span>Fresh Graduate</span>
-                    </div>
-                  )}
-                  {profileType ? (
-                    <div>
-                      <label htmlFor="company" style={{ color: "#007580" }}>
-                        Company
-                      </label>
-                      <br />
-                      <span>{calendardate?.profile[0].currentCompany}</span>
+                      <span>{ profile?.currentCompany }</span>
                     </div>
                   ) : (
                     <div>
@@ -198,268 +234,178 @@ function Profile({ Id }) {
                         Unviersity
                       </label>
                       <br />
-                      <span>Alexandria Unviersity</span>
+                      <span>{ profile?.university }</span>
                     </div>
-                  )}
+                  )
+                  }
                 </div>
                 <div className="col">
                   <div>
-                    <label htmlFor="phone" style={{ color: "#007580" }}>
-                      yearsOfExperence:
-                    </label>
+                    <label htmlFor="yearsOfExperence" style={{ color: "#007580" }}>Years Of Experence:</label>
                     <br />
-                    <span>{calendardate?.profile[0].yearsOfExperence} years</span>
+                    <span>{ profile?.yearsOfExperence }</span>
                   </div>
                   <div>
-                    <label htmlFor="email" style={{ color: "#007580" }}>
-                      Email
-                    </label>
+                    <label htmlFor="email" style={{ color: "#007580" }}>Email</label>
                     <br />
-                    <span>{currentUser.email}</span>
+                    <span>{profile?.user?.email || "Balquees@gmail.com"}</span>
                   </div>
-                  {profileType ? (
-                    ""
-                  ) : (
+                  {profile?.user?.role === "mentor" ? ("") : (
                     <div className="mt-3">
                       <span className="bg-warning text-white p-2 rounded-pill">
                         JOB SEEKER{" "}
-                        <i className="fa-solid fa-exclamation --icon-not"></i>
+                        { profile?.availableForHiring 
+                        ?<i className="fa-solid fa-exclamation --icon-not"></i>
+                        :("") }
                       </span>
                     </div>
                   )}
                 </div>
               </div>
               <p className="" style={{ fontSize: "15px", marginTop: "5%" }}>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever
+                { profile?.about || "Lorem Ipsum has been the industry's standard dummy text ever"}
               </p>
               <div className="--user-exp">
                 <h5 style={{ color: "#007580", fontSize: "15px" }}>
                   Experience
                 </h5>
-                <div className="d-flex justify-content-between">
-                  <span>{calendardate?.profile[0].expertise.map((item) => (
-                    <p>{item.name}</p>
-                  ))}</span>
-                  <span style={{ color: "#007580" }}>2016-2019</span>
+                {
+                  profile?.expertise?.map((exp, i)=>{
+                    return (
+                      <div key={i} className="d-flex justify-content-between">
+                        <span>{ exp?.name }</span>
+                        <span style={{ color: "#007580" }}>{ exp?.from }-{ exp?.to }</span>
+                      </div>
+                    )
+                  })
+                }
+              </div>
+              <div className="--user-skills mt-3">
+                <h5 style={{ color: "#007580", fontSize: "15px" }}>Skills</h5>
+                <div className="col-3 mt-4">
+                 {profile?.skills && profile?.skills?.map((skill, i)=>{ 
+                    return (<span key={i}>{skill}</span>)
+                  })}
                 </div>
               </div>
-              {
-                profileType ? '' : (
-                  <div className="--user-skills mt-3">
-                    <h5 style={{ color: "#007580", fontSize: "15px" }}>Skills</h5>
-                    <div className="col-3 mt-4">
-                      {
-                        calendardate?.profile[0].skills.map((item) => (
-                          <span>{item}</span>
-                        ))
-                      }
-                    </div>
-                  </div>
-                )
-              }
-              {profileType ? (
+              {profile?.user?.role === "mentor" ? (
                 <div>
-                  <h5
-                    style={{
-                      color: "#007580",
-                      fontSize: "15px",
-                      marginTop: "8%",
-                    }}
-                  >
+                  <h5 style={{ color: "#007580", fontSize: "15px", marginTop: "8%", }}>
                     Open Mentoring Oppourtunity
                   </h5>
-                  <div
-                    className="d-flex justify-content-around align-items-center mt-3 rounded p-3 gap-1"
-                    style={{ backgroundColor: "azure" }}
-                  >
-                    <h6 style={{ fontSize: "14px" }}>
-                      Website UI Design Implementaion
-                    </h6>
-                    <button
-                      className="btn bg-warning rounded-pill text-white"
-                      style={{ padding: "2px 30px" }}
-                    >
-                      View
-                    </button>
-                    <button
-                      className="btn bg-warning rounded-pill text-white"
-                      style={{ padding: "2px 30px" }}
-                    >
-                      Request
-                    </button>
-                  </div>
-                  <h5
-                    style={{
-                      color: "#007580",
-                      fontSize: "15px",
-                      marginTop: "8%",
-                    }}
-                  >
+                  {
+                    oppOrReq?.map((opp, i)=>{
+                      if(opp?.progress === 'open')
+                      return (
+                        <div className="d-flex justify-content-around align-items-center mt-3 rounded p-3 gap-1" style={{ backgroundColor: "azure" }} key={i}>
+                          <h6 style={{ fontSize: "14px" }}> {opp?.title} </h6>
+                            <Link className="btn bg-warning rounded-pill text-white" style={{ padding: "2px 30px" }} 
+                            to={"/ShowOpp/"+opp._id}> View 
+                            </Link>
+                          <button className="btn bg-warning rounded-pill text-white" style={{ padding: "2px 30px" }} onClick={()=>applyForOpp(opp._id)}> Apply </button>
+                        </div>)
+                      else return(<></>)
+                    })
+                  }
+                  
+                  <h5 style={{ color: "#007580", fontSize: "15px", marginTop: "8%", }}>
                     Past mentees
                   </h5>
                   <div className="d-flex">
-                    <div>
-                      <img
-                        src={mentor4}
-                        alt="menteeimage"
-                        className="w-75 h-75 img-thumbnail"
-                      />
-                      <h5 style={{ fontSize: "14px", paddingTop: "5px" }}>
-                        Name
-                      </h5>
-                      <h6 style={{ color: "#007589", fontSize: "12px" }}>
-                        Student
-                      </h6>
-                    </div>
-                    <div>
-                      <img
-                        src={mentor4}
-                        alt="menteeimage"
-                        className="w-75 h-75 img-thumbnail"
-                      />
-                      <h5 style={{ fontSize: "14px", paddingTop: "5px" }}>
-                        Name
-                      </h5>
-                      <h6 style={{ color: "#007589", fontSize: "12px" }}>
-                        Student
-                      </h6>
-                    </div>
-                    <div>
-                      <img
-                        src={mentor4}
-                        alt="menteeimage"
-                        className="w-75 h-75 img-thumbnail"
-                      />
-                      <h5 style={{ fontSize: "14px", paddingTop: "5px" }}>
-                        Name
-                      </h5>
-                      <h6 style={{ color: "#007589", fontSize: "12px" }}>
-                        Student
-                      </h6>
-                    </div>
-                    <div>
-                      <img
-                        src={mentor4}
-                        alt="menteeimage"
-                        className="w-75 h-75 img-thumbnail"
-                      />
-                      <h5 style={{ fontSize: "14px", paddingTop: "5px" }}>
-                        Name
-                      </h5>
-                      <h6 style={{ color: "#007589", fontSize: "12px" }}>
-                        Student
-                      </h6>
-                    </div>
+                  {dealtWith?.map((mentee, i)=>{
+                    return(
+                    <div key={i}>
+                      <img src={mentee?.avatar || mentor4} alt="menteeimage" className="w-75 h-75 img-thumbnail" />
+                      <h5 style={{ fontSize: "14px", paddingTop: "5px" }}> {mentee?.name} </h5>
+                      <h6 style={{ color: "#007589", fontSize: "12px" }}> Student </h6>
+                    </div>)}
+                  )}
                   </div>
-                  <button
-                    className="btn rounded-pill text-white mt-5"
-                    style={{ backgroundColor: "#007580", padding: "10px 42px" }}
-                  >
+                  <button className="btn rounded-pill text-white mt-5" style={{ backgroundColor: "#007580", padding: "10px 42px" }} >
                     Download Cv
                   </button>
                 </div>
               ) : (
                 <>
-                  <h5
-                    style={{
-                      color: "#007580",
-                      fontSize: "15px",
-                      marginTop: "8%",
-                    }}
-                  >
+                  <h5 style={{ color: "#007580", fontSize: "15px", marginTop: "8%", }} >
                     Open Mentoring Requets
                   </h5>
-                  <div
-                    className="rounded"
-                    style={{
-                      backgroundColor: "rgba(0, 117, 137, 0.33)",
-                      marginTop: "4%",
-                      padding: "18px",
-                    }}
-                  >
-                    <div className="d-flex flex-row justify-content-between align-items-center">
-                      <h4 className="fs-4" style={{ color: "#007580" }}>
-                        Front end Development
-                      </h4>
-                      <div className="d-flex align-items-end gap-2">
-                        <button
-                          className="btn rounded-pill bg-warning"
-                          style={{ padding: "4px 21px" }}
-                        >
-                          View
-                        </button>
-                        <button
-                          className="btn rounded-pill bg-warning"
-                          style={{ padding: "4px 21px" }}
-                        >
-                          Mentor
-                        </button>
+                  <div className="rounded" style={{ backgroundColor: "rgba(0, 117, 137, 0.33)", marginTop: "4%", padding: "18px", }} >
+                    {oppOrReq?.map((req, i)=>{
+                      if(req?.progress === 'open')
+                      return (
+                      <div key={i}>
+                        <div className="d-flex flex-row justify-content-between align-items-center">
+                          <h4 className="fs-4" style={{ color: "#007580" }}>
+                            {req?.title}
+                          </h4>
+                          <div className="d-flex align-items-end gap-2">
+                            <Link  className="btn rounded-pill bg-warning" style={{ padding: "4px 21px" }} to={"/ShowReq/"+req?._id}>View
+                            </Link>
+                            {user?.role === "mentor"
+                            ? ( req?.applicants?.indexOf(user?._id) === -1
+                            ?<button className="btn rounded-pill bg-warning" style={{ padding: "4px 21px" }} onClick={()=>applyForReq(req._id)}>
+                              Apply
+                            </button>
+                            :<button className="btn rounded-pill bg-warning" style={{ padding: "4px 21px" }}>
+                            Applied
+                          </button>
+                            ) : ""}
+                          </div>
+                        </div>
+                        <h3 className="fs-6">{profile?.user?.name}{" "}
+                          <span style={{ color: "#007580", fontSize: "12px" }}>
+                            is looking for a mentor{" "}
+                          </span>
+                        </h3>
+                        <p className="text-dark" style={{ fontSize: "12px", marginTop: "5%" }} >
+                          {req?.description}
+                        </p>
+                        <summary className="list-unstyled">...read more</summary>
+                        <div style={{ marginLeft: "-6%", marginTop: "3%" }}>
+                          <ul style={{ display: "grid", gridTemplateColumns: "repeat(2,auto)", listStyle: "none", }} >
+                            <li style={{ color: "#007580", fontSize: "14px" }}>
+                              Duration : 
+                              <span className="text-dark">{req?.duration / 30 || "Open"}</span>
+                            </li>
+                            <li style={{ color: "#007580", fontSize: "14px" }}>
+                              Paid : 
+                              <span className="text-dark">{
+                                req?.paid?.isPaid? "Yes": "No"
+                              }</span>
+                            </li>
+                            <li style={{ color: "#007580", fontSize: "14px" }}>
+                              Looking for a Job :
+                              {" "}
+                              <span className="text-dark">Yes</span>
+                            </li>
+                            <li style={{ color: "#007580", fontSize: "14px" }}>
+                              Experience : 
+                              <span className="text-dark">{req?.experience || "None"}</span>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
-                    </div>
-                    <h3 className="fs-6">
-                      Balques hamadi{" "}
-                      <span style={{ color: "#007580", fontSize: "12px" }}>
-                        is looking for a mentor{" "}
-                      </span>
-                    </h3>
-                    <p
-                      className="text-dark"
-                      style={{ fontSize: "12px", marginTop: "5%" }}
-                    >
-                      Lorem Ipsum is simply dummy text of the printing and
-                      typesetting industry. Lorem Ipsum has been the industry's
-                      standard dummy text ever
-                    </p>
-                    <summary className="list-unstyled">...read more</summary>
-                    <div style={{ marginLeft: "-6%", marginTop: "3%" }}>
-                      <ul
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(2,auto)",
-                          listStyle: "none",
-                        }}
-                      >
-                        <li style={{ color: "#007580", fontSize: "14px" }}>
-                          Duration : <span className="text-dark">2 months</span>
-                        </li>
-                        <li style={{ color: "#007580", fontSize: "14px" }}>
-                          Paid : <span className="text-dark">Yes</span>
-                        </li>
-                        <li style={{ color: "#007580", fontSize: "14px" }}>
-                          Looking for a Job :{" "}
-                          <span className="text-dark">Yes</span>
-                        </li>
-                        <li style={{ color: "#007580", fontSize: "14px" }}>
-                          Experience : <span className="text-dark">None</span>
-                        </li>
-                      </ul>
-                    </div>
+                      )
+                      else return(<></>)
+                      })}
                   </div>
-                  <h5
-                    style={{
-                      color: "#007580",
-                      fontSize: "15px",
-                      marginTop: "8%",
-                    }}
-                  >
+
+                  <h5 style={{ color: "#007580", fontSize: "15px", marginTop: "8%", }} >
                     Perviously Mentored By
                   </h5>
-                  <div className="d-flex justify-content-between">
-                    <div className="d-block mt-2">
-                      <h5 className="fs-5">Website UI Design Implementaion</h5>
-                      <h6 className="fs-6 ps-2">
-                        Mentored By: <span>Blel ahmed</span>
-                      </h6>
-                    </div>
-                    <button
-                      className="btn bg-warning rounded-pill"
-                      style={{ height: "36px", padding: "0px 27px" }}
-                    >
-                      View
-                    </button>
-                  </div>
+                  {dealtWith.map((mentor, i)=>{
+                    return(
+                    <div className="d-flex justify-content-between" key={i}>
+                      <div className="d-block mt-2">
+                        <h5 className="fs-5">{mentor?.designation}</h5>
+                        <h6 className="fs-6 ps-2"> Mentored By: <span>{mentor?.name}</span></h6>
+                      </div>
+                      <Link to={"/external/"+mentor?.user?._id || mentor?.user} className="btn bg-warning rounded-pill" style={{ height: "36px", padding: "0px 27px" }} >
+                        View
+                      </Link>
+                    </div>)
+                  })}
                   <button
                     className="btn rounded-pill text-white mt-5"
                     style={{ backgroundColor: "#007580", padding: "10px 42px" }}
@@ -474,93 +420,43 @@ function Profile({ Id }) {
         <div className="col-lg-3 col-md-2 sm-d-none">
           <div
             className="wrappz"
-            style={{
-              backgroundColor: "#d2d2d24f",
-              padding: "13px",
-              width: "fit-content",
-            }}
-          >
+            style={{ backgroundColor: "#d2d2d24f", padding: "13px", width: "fit-content", }}>
             <div className="d-flex align-items-center text-center">
-              <input
-                type="text"
-                value={searchTerm}
-                placeholder="Search"
-                onChange={handleSearch}
-                className="rounded mt-2 text-white text-center"
-                style={{ backgroundColor: "#007580", padding: "9px 40px" }}
-              />
-              <i
-                className="fa-solid fa-magnifying-glass"
-                style={{
-                  marginLeft: "-20%",
-                  color: "white",
-                  fontsize: "17px",
-                  marginTop: "2%",
-                }}
-              ></i>
+              <input className="rounded mt-2 text-white text-center" style={{ backgroundColor: "#007580", padding: "9px 40px" }}
+              type="text" value={searchTerm} placeholder="Search" onChange={handleSearch} />
+              <i className="fa-solid fa-magnifying-glass" style={{ marginLeft: "-20%", color: "white", fontsize: "17px", marginTop: "2%", }} > </i>
             </div>
+            {/* get messages */}
             <div className="msgs" style={{ marginTop: "4%", padding: "12px" }}>
-              {filteredMessages.map((msgs) => {
+              {filteredMessages?.map((msgs, i) => {
                 return (
-                  <div
-                    className="d-flex gap-5 align-items-center"
-                    key={msgs.id}
-                  >
-                    <img
-                      src={msgs.usrImg}
-                      alt="userImages"
-                      className="w-25 h-25 rounded-circle"
-                    />
+                  <div className="d-flex gap-5 align-items-center" key={i} >
+                    <img src={msgs.avatar} alt="userImages" className="w-25 h-25 rounded-circle" />
                     <div className="d-block">
-                      <h4 style={{ fontSize: "14px" }}>{msgs.name}</h4>
-                      <p style={{ fontSize: "12px", color: "gray" }}>
-                        {msgs.msg}
-                      </p>
+                      <h4 style={{ fontSize: "14px" }}> {msgs.name} </h4>
+                      <p style={{ fontSize: "12px", color: "gray" }}> {msgs.messageContent} </p>
                     </div>
                   </div>
                 );
               })}
+              {/* post messages */}
               <div className="d-flex flex-column gap-2">
-                <button
-                  className={`${msgBtnClicked ? "d-none" : "d-flex justify-content-center"
-                    } btn btn-warning`}
-                  onClick={() => setMsgBtnClicked(!msgBtnClicked)}
-                >
-                  New Message
-                </button>
-                <div
-                  className={
-                    msgBtnClicked ? "d-flex flex-column gap-2" : "d-none"
-                  }
-                >
-                  <input
-                    type="text"
-                    value={sender.to}
-                    className="p-1 rounded"
-                    placeholder="To :"
-                    onChange={(e) => {
-                      setSender({ ...sender, to: e.target.value });
-                    }}
-                  />
-                  <textarea
-                    name="textarea"
-                    value={sender.val}
-                    className="mt-2 w-100 p-1 rounded border-bottom border-warning"
-                    placeholder="enter your message"
-                    onChange={(e) => {
-                      setSender({ ...sender, val: e.target.value });
-                    }}
-                  />
-
-                  <button
-                    className="btn btn-warning"
-                    onClick={() => {
-                      handleSend();
-                      setMsgBtnClicked(false);
-                    }}
-                  >
-                    Send
-                  </button>
+                <div className="d-flex flex-column gap-2" >
+                  <div className='d-flex flex-column gap-2'>
+                    <button className={`${msgBtnClicked ? 'd-none' : 'd-flex justify-content-center'} btn btn-warning`} 
+                    onClick={() => { setMsgBtnClicked(!msgBtnClicked); }}>
+                      New Message
+                    </button>
+                    <div className={ msgBtnClicked ?  'd-flex flex-column gap-2' : 'd-none' }>
+                      <textarea className='mt-2 w-100 p-1 rounded border-bottom border-warning' placeholder='enter your message'
+                      id='inputMsgContent' name='textarea' value={msgContent}   
+                      onChange={(e)=>{setMsgContent(e.target.value)}} />
+                      <button className='btn btn-warning'
+                      type="submit" onClick={(e)=> handleMessage(e)} >
+                        Send
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -577,9 +473,9 @@ function Profile({ Id }) {
                 </div>
                 <div className="calendar-body">
                   <div className="table-header">
-                    {weekdays.map((weekday) => {
+                    {weekdays.map((weekday, i) => {
                       return (
-                        <div className="weekday">
+                        <div className="weekday" key={i}>
                           <p>{weekday}</p>
                         </div>
                       );
