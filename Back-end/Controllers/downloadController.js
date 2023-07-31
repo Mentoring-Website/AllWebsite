@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require('path')
 const User = require('../Models/userModel')
+const Profile =require('../Models/ProfileModel')
 
 const uploadCV = async (req, res) => {
   const userId = req.params.id;
@@ -18,9 +19,79 @@ const uploadCV = async (req, res) => {
     user.cvPath = cvPath; 
     await user.save();
 
+
     res.send("CV uploaded successfully");
   } catch (error) {
     console.log("Error uploading CV:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+//////////////////////////////////////////////////////////////////////////
+
+// const uploadAV = async (req, res) => {
+//   const profileId = req.params.id;
+
+//   // const avatar = req.file?.path;
+//   const avatar = req.file ? req.file.fieldname : "";
+
+//   try {
+    
+//     const profile = await Profile.findById(profileId);
+    
+//     if (!profile) {
+//       res.status(404).send("profile not found");
+//       return;
+//     }
+//     profile.avatar = avatar; 
+//     await profile.save();
+//   // const userId = req.params.id;
+
+//   // const avatar = req.file?.path;
+
+//   // try {
+    
+//   //   const user = await Profile.findById(userId);
+    
+//   //   if (!user) {
+//   //     res.status(404).send("profile not found");
+//   //     return;
+//   //   }
+//   //   user.avatar = avatar; 
+//   //   await user.save();
+
+
+//     res.send("avatar uploaded successfully");
+//   } catch (error) {
+//     console.log("Error uploading avatar:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// };
+const uploadAV = async (req, res) => {
+  const profileId = req.params.id;
+
+  // Check if a file was uploaded
+  if (!req.file) {
+    res.status(400).send("No file uploaded");
+    return;
+  }
+
+  const avatarPath = req.file.path;
+
+  try {
+    const profile = await Profile.findById(profileId);
+
+    if (!profile) {
+      res.status(404).send("Profile not found");
+      return;
+    }
+
+    profile.avatar = avatarPath; 
+    await profile.save(); 
+    res.send({ avatarPath });
+    
+    // res.send("Avatar uploaded successfully");
+  } catch (error) {
+    console.log("Error uploading avatar:", error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -54,4 +125,5 @@ const downloadcv = async (req, res) => {
 module.exports = {
   uploadCV,
   downloadcv,
+  uploadAV
 };
