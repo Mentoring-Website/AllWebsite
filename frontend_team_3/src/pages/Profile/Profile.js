@@ -23,6 +23,7 @@ function Profile() {
     currentCompany: '', 
     university: '',
     yearsOfExperence: 0, 
+    phone: '000',
     availableForHiring: true, 
     about: 'sixteen free code camp', 
     expertise: [{name: '', from: '', to: ''}], 
@@ -224,9 +225,17 @@ function Profile() {
                     </div>
                   {profile?.user?.role === "mentor" ? (
                     <div>
+                      <div>
                       <label htmlFor="company" style={{ color: "#007580" }}>Company</label>
                       <br />
                       <span>{ profile?.currentCompany }</span>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="yearsOfExperence" style={{ color: "#007580" }}>Years Of Experence:</label>
+                      <br />
+                      <span>{ profile?.yearsOfExperence }</span>
+                    </div>
                     </div>
                   ) : (
                     <div>
@@ -241,9 +250,9 @@ function Profile() {
                 </div>
                 <div className="col">
                   <div>
-                    <label htmlFor="yearsOfExperence" style={{ color: "#007580" }}>Years Of Experence:</label>
+                    <label htmlFor="phone" style={{ color: "#007580" }}>Phone Number:</label>
                     <br />
-                    <span>{ profile?.yearsOfExperence }</span>
+                    <span>{ profile?.phone }</span>
                   </div>
                   <div>
                     <label htmlFor="email" style={{ color: "#007580" }}>Email</label>
