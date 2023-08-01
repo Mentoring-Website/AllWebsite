@@ -145,7 +145,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "Profile",
     unique: true,
-    
+
   },
   googleId: {
     type: String,
@@ -161,7 +161,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    
+
     trim: true,
     minlength: 8,
     validate(val) {
@@ -177,14 +177,14 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-  
+
     unique: true,
     lowercase: true,
     validate(val) {
       if (!validator.isEmail(val)) throw new Error("email is invalid");
     },
   },
-  tokens:[{
+  tokens: [{
     type: String
   }],
   role: {
@@ -192,7 +192,7 @@ const userSchema = new mongoose.Schema({
     enum: ['mentee', 'mentor'],
     default: 'mentee'
   }
-  });
+});
 
 userSchema.virtual("messages", {
   ref: "Message",

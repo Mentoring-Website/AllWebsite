@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { Localhost } from '../../config/api';
+import { Error, Success } from '../../components/Toast';
 const ContactUs = () => {
 
 
@@ -45,9 +46,11 @@ const ContactUs = () => {
 
       });
       console.log(formData)
+      Success('The Email Success')
     } catch (error) {
       //   // Handle any errors
       console.error(error);
+      Error('The Email not send')
     }
 
   };
