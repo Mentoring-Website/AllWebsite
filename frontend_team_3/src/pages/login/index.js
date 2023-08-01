@@ -123,7 +123,7 @@ export const Login = (props) => {
   return (
     <div>
       <Logo/>
-      <div className="all">
+      <div className="all1">
         <div className="auth-form-container item">
           <h3>Login</h3>
           <form className="login-form d-flex flex-column form" onSubmit={handleSubmit}>
